@@ -1,4 +1,5 @@
 /GraphSAGE
 /pyGAT
-spatial_graph_convnets/data
+spatial_graph_convnets/data/cora
+spatial_graph_convnets/data/ppi
 .ipynb_checkpoints
