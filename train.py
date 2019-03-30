@@ -38,10 +38,8 @@ else:
     torch.manual_seed(args.seed)
     
     
-def train(net, lr, l2, batch_iters, early_stopping, SAVE_PATH, verbose=False):
+def train(net, lr, l2, batch_iters, nb_classes, early_stopping, SAVE_PATH, verbose=False, max_iters = 1000):
     ### optimization parameters
-    nb_classes = 7 
-    max_iters = 1000
     decay_rate = 1.25
 
     # Optimizer
@@ -131,15 +129,15 @@ for i in range(1):
     print("Training on", args.dataset)
     print("Setting Layers=%d, L2=%.5f, LR=%f, Dropout_FC=%.3f, Dropout_edge=%.3f, Dropin=%.5f" % (net_parameters['L'], l2, lr, net_parameters['Dropout_fc'], net_parameters['Dropout_edge'], net_parameters['Dropout_in']))
     
-    train(net, lr, l2, batch_iters, early_stopping, SAVE_PATH, verbose)
+    train(net, lr, l2, batch_iters, net_parameters['nb_clusters_target'],  early_stopping, SAVE_PATH, verbose, 500)
     
     # Eval
     net.load_state_dict(torch.load(SAVE_PATH))
     net.eval()
     y_eval = net.forward(features_x, E_start, E_end, E_identity, E_dropin)
 
-    loss = net.loss(y_eval[idx_test], labels[idx_test], None) 
+    loss = net.loss(y_eval[idx_test], train_y[idx_test], None) 
     accuracy = calculate_avg_accuracy(net_parameters['nb_clusters_target'], 
-                                      labels[idx_test], y_eval[idx_test])
-    print('\nloss = %.3f, accuracy = %.3f' % (loss.item(), 100* accuracy))
+                                      train_y[idx_test], y_eval[idx_test])
+    print('\ntest loss = %.3f, test accuracy = %.3f' % (loss.item(), 100* accuracy))
     test_acc[i] += accuracy

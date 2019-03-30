@@ -42,9 +42,7 @@ def load_variables(dataset='cora', cuda=True):
     
     E = 20000
     V = adj.shape[0]
-    if dataset == 'citeseer':
-        E = 40000
-    elif dataset == 'pubmed':
+    if dataset == 'pubmed':
         E = 110000
     
     E_start = np.zeros((E, V))

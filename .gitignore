@@ -4,3 +4,4 @@ spatial_graph_convnets/data/cora
 spatial_graph_convnets/data/ppi
 .ipynb_checkpoints
 *.pyc
+/model_states

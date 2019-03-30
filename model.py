@@ -87,14 +87,15 @@ class OurConvNetcell(nn.Module):
         x1 = torch.mm(E_end,Vix) + torch.mm(E_start,Vjx) + self.bv1  # E x H_out
         x1 = torch.sigmoid(x1)
         x1 = F.dropout(x1, self.dropout_fc, training=self.training)
+        print(x1)
 
         x2 = torch.mm(E_start, Uix)  #  E x H_out
         x = torch.mm(E_end.t(), x1*x2) + self.bu1 #  V x H_out
-        
+        print(x)
         x = torch.div(x, norm)# norm
         x = self.bn1(x) # bn1
         x = torch.nn.LeakyReLU(0.1)(x) # relu1
-
+        print("x3", x)
         # conv2
         Uix = self.Ui2(x)  #  V x H_out
         Vix = self.Vi2(x)  #  V x H_out
@@ -215,7 +216,6 @@ class Graph_OurConvNet(nn.Module):
         nb_clusters_target = net_parameters['nb_clusters_target']
         H = net_parameters['H']
         L = net_parameters['L']
-        self.cora = cora
         self.use_cuda = cuda
         self.dropout_fc = net_parameters['Dropout_fc']
         self.dropout_edge = net_parameters['Dropout_edge']
