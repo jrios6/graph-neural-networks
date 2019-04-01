@@ -77,7 +77,7 @@ def train(net, lr, l2, batch_iters, nb_classes, early_stopping, SAVE_PATH, verbo
             avg_train_acc = running_train_acc/ batch_iters
 
             # update learning rate 
-            if val_accuracy < avg_train_acc and avg_train_acc > 0.8:
+            if val_accuracy < avg_train_acc and avg_train_acc > 0.75:
                 optimizer, lr = update_lr(net, optimizer, average_val_loss, average_loss_old, 
                                           lr, decay_rate, early_stopping, verbose)
 
