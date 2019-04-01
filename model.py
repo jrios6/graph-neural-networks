@@ -18,6 +18,7 @@ def dropin(new_edges, rate, dim=2708, cuda=False):
     if cuda:
         return E_start.cuda(), E_end.cuda()
     return E_start, E_end
+
 class OurConvNetcell(nn.Module):
     def __init__(self, dim_in, dim_out, dropout_fc=0, dropout_edge=0):
         super(OurConvNetcell, self).__init__()
@@ -86,120 +87,21 @@ class OurConvNetcell(nn.Module):
         Vjx = self.Vj1(x)  #  V x H_out
         x1 = torch.mm(E_end,Vix) + torch.mm(E_start,Vjx) + self.bv1  # E x H_out
         x1 = torch.sigmoid(x1)
-        x1 = F.dropout(x1, self.dropout_fc, training=self.training)
-        print(x1)
-
         x2 = torch.mm(E_start, Uix)  #  E x H_out
         x = torch.mm(E_end.t(), x1*x2) + self.bu1 #  V x H_out
-        print(x)
         x = torch.div(x, norm)# norm
+        
         x = self.bn1(x) # bn1
         x = torch.nn.LeakyReLU(0.1)(x) # relu1
-        print("x3", x)
+
         # conv2
         Uix = self.Ui2(x)  #  V x H_out
         Vix = self.Vi2(x)  #  V x H_out
         Vjx = self.Vj2(x)  #  V x H_out
         x1 = torch.mm(E_end,Vix) + torch.mm(E_start,Vjx) + self.bv2  # E x H_out
-        x1 = torch.sigmoid(x1)
-        x1 = F.dropout(x1, self.dropout_fc, training=self.training)
-        
+        x1 = torch.sigmoid(x1)        
         x2 = torch.mm(E_start, Uix)  #  V x H_out        
         x = torch.mm(E_end.t(), x1*x2) + self.bu2 #  V x H_out
-        x = torch.div(x, norm) # normalization
-        
-        x = self.bn2(x) # bn2
-        x = x + self.R(xin) # addition
-        x = torch.nn.LeakyReLU(0.1)(x) # relu2
-        
-        return x
-        
-class OurConvNetcell(nn.Module):
-    def __init__(self, dim_in, dim_out, dropout_fc=0, dropout_edge=0):
-        super(OurConvNetcell, self).__init__()
-    
-        # conv1
-        self.Ui1 = nn.Linear(dim_in, dim_out, bias=False) 
-        self.Vi1 = nn.Linear(dim_in, dim_out, bias=False) 
-        self.Vj1 = nn.Linear(dim_in, dim_out, bias=False)  
-        self.bu1 = torch.nn.Parameter( torch.FloatTensor(dim_out), requires_grad=True )
-        self.bv1 = torch.nn.Parameter( torch.FloatTensor(dim_out), requires_grad=True )
-        
-        self.dropout_fc = dropout_fc
-        self.dropout_edge = dropout_edge
-        
-        # conv2
-        self.Ui2 = nn.Linear(dim_out, dim_out, bias=False) 
-        self.Vi2 = nn.Linear(dim_out, dim_out, bias=False) 
-        self.Vj2 = nn.Linear(dim_out, dim_out, bias=False)  
-        self.bu2 = torch.nn.Parameter( torch.FloatTensor(dim_out), requires_grad=True )
-        self.bv2 = torch.nn.Parameter( torch.FloatTensor(dim_out), requires_grad=True )
-        
-        # bn1, bn2
-        self.bn1 = torch.nn.BatchNorm1d(dim_out)
-        self.bn2 = torch.nn.BatchNorm1d(dim_out)
-        
-        # resnet
-        self.R = nn.Linear(dim_in, dim_out, bias=False) 
-        
-        # init
-        self.init_weights_OurConvNetcell(dim_in, dim_out, 1)
-        
-         
-    def init_weights_OurConvNetcell(self, dim_in, dim_out, gain):   
-        # conv1
-        scale = gain* np.sqrt( 2.0/ dim_in )
-        self.Ui1.weight.data.uniform_(-scale, scale) 
-        self.Vi1.weight.data.uniform_(-scale, scale) 
-        self.Vj1.weight.data.uniform_(-scale, scale) 
-        self.bu1.data.fill_(0)
-        self.bv1.data.fill_(0)
-        
-        # conv2
-        scale = gain* np.sqrt( 2.0/ dim_out )
-        self.Ui2.weight.data.uniform_(-scale, scale) 
-        self.Vi2.weight.data.uniform_(-scale, scale) 
-        self.Vj2.weight.data.uniform_(-scale, scale) 
-        self.bu2.data.fill_(0)
-        self.bv2.data.fill_(0)
-        
-        # RN
-        scale = gain* np.sqrt( 2.0/ dim_in )
-        self.R.weight.data.uniform_(-scale, scale)  
-        
-        
-    def forward(self, x, E_start, E_end):
-        x = F.dropout(x, self.dropout_fc, training=self.training)
-        xin = x
-        
-        # edge norm
-        norm = torch.sum(E_end.t(), 1).reshape(-1,1)
-#         norm = torch.max(norm, torch.ones(norm.shape).cuda())
-
-        # conv1
-        Uix = self.Ui1(x)  #  V x H_out
-        Vix = self.Vi1(x)  #  V x H_out
-        Vjx = self.Vj1(x)  #  V x H_out
-        x1 = torch.mm(E_end,Vix) + torch.mm(E_start,Vjx) + self.bv1  # E x H_out
-        x1 = torch.sigmoid(x1)
-
-        x2 = torch.mm(E_start, Uix)  #  E x H_out
-        x = torch.mm(E_end.t(), x1*x2) + self.bu1 #  V x H_out
-        
-        x = torch.div(x, norm)# norm
-        x = self.bn1(x) # bn1
-        x = torch.nn.LeakyReLU(0.1)(x) # relu1
-        
-        # conv2
-        Uix = self.Ui2(x)  #  V x H_out
-        Vix = self.Vi2(x)  #  V x H_out
-        Vjx = self.Vj2(x)  #  V x H_out
-        x1 = torch.mm(E_end,Vix) + torch.mm(E_start,Vjx) + self.bv2  # E x H_out
-        x1 = torch.sigmoid(x1)
-        
-        x2 = torch.mm(E_start, Uix)  #  V x H_out        
-        x = torch.mm(E_end.t(), x1*x2) + self.bu2 #  V x H_out
-        
         x = torch.div(x, norm) # normalization
         
         x = self.bn2(x) # bn2

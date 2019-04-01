@@ -31,7 +31,7 @@ def load_variables(dataset='cora', cuda=True):
     idx_train = np.argwhere(train_mask).reshape(-1)
     idx_val = np.argwhere(val_mask).reshape(-1)
     idx_test = np.argwhere(test_mask).reshape(-1)
-    labels = torch.LongTensor(np.where(labels)[1])
+    labels = torch.LongTensor(np.argmax(labels, 1))
 
     new_edges = []
     for v1 in idx_train:

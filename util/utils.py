@@ -97,6 +97,7 @@ def load_data2(path="./data/cora/", dataset="cora"):
 
 def load_data3(dataset_str):
     """
+    FROM https://github.com/tkipf/gcn
     Loads input data from gcn/data directory
 
     ind.dataset_str.x => the feature vectors of the training instances as scipy.sparse.csr.csr_matrix object;

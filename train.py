@@ -21,11 +21,11 @@ parser.add_argument('--d_in', type=float, default=0.0075, help='Dropin rate (1 -
 parser.add_argument('--dataset', default="cora", help='Name of Dataset')
 parser.add_argument('--save_path', default="model_states/state", help='Name of Dataset')
 
+
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 
 np.random.seed(args.seed)
-
 if args.cuda:
     print('cuda available')
     dtypeFloat = torch.cuda.FloatTensor
@@ -129,7 +129,7 @@ for i in range(1):
     print("Training on", args.dataset)
     print("Setting Layers=%d, L2=%.5f, LR=%f, Dropout_FC=%.3f, Dropout_edge=%.3f, Dropin=%.5f" % (net_parameters['L'], l2, lr, net_parameters['Dropout_fc'], net_parameters['Dropout_edge'], net_parameters['Dropout_in']))
     
-    train(net, lr, l2, batch_iters, net_parameters['nb_clusters_target'],  early_stopping, SAVE_PATH, verbose, 500)
+    train(net, lr, l2, batch_iters, net_parameters['nb_clusters_target'],  early_stopping, SAVE_PATH, verbose, args.epochs)
     
     # Eval
     net.load_state_dict(torch.load(SAVE_PATH))
