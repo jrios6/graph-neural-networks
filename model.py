@@ -20,7 +20,7 @@ def dropin(new_edges, rate, dim=2708, cuda=False):
     return E_start, E_end
 
 class OurConvNetcell(nn.Module):
-    def __init__(self, dim_in, dim_out, dropout_fc=0, dropout_edge=0):
+    def __init__(self, dim_in, dim_out, dropout_fc=0, dropout_edge=0, use_cuda=True):
         super(OurConvNetcell, self).__init__()
     
         # conv1
@@ -49,7 +49,7 @@ class OurConvNetcell(nn.Module):
         
         # init
         self.init_weights_OurConvNetcell(dim_in, dim_out, 1)
-        
+        self.use_cuda = use_cuda
          
     def init_weights_OurConvNetcell(self, dim_in, dim_out, gain):   
         # conv1
@@ -79,7 +79,8 @@ class OurConvNetcell(nn.Module):
         
         # edge norm
         norm = torch.sum(E_end.t(), 1).reshape(-1,1)
-        norm = torch.max(norm, torch.ones(norm.shape).cuda())
+        ones = torch.ones(norm.shape).cuda() if self.use_cuda else torch.ones(norm.shape)
+        norm = torch.max(norm, ones)
 
         # conv1
         Uix = self.Ui1(x)  #  V x H_out
@@ -136,7 +137,7 @@ class Graph_OurConvNet(nn.Module):
         list_of_gnn_cells = [] # list of NN cells
         for layer in range(self.L//2):
             Hin, Hout = net_layers_extended[2*layer], net_layers_extended[2*layer+2]
-            list_of_gnn_cells.append(OurConvNetcell(Hin,Hout, self.dropout_fc, self.dropout_edge))
+            list_of_gnn_cells.append(OurConvNetcell(Hin,Hout, self.dropout_fc, self.dropout_edge, self.use_cuda))
         
         # register the cells for pytorch
         self.gnn_cells = nn.ModuleList(list_of_gnn_cells)

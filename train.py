@@ -46,7 +46,7 @@ def train(net, lr, l2, batch_iters, nb_classes, early_stopping, SAVE_PATH, verbo
     optimizer = net.update(lr, l2) 
     t_start = time.time()
     t_start_total = time.time()
-    average_loss_old = torch.tensor(1e4).cuda()
+    average_loss_old = torch.tensor(1e4).cuda() if net.use_cuda else torch.tensor(1e4)
     best = running_train_acc = running_train_loss = running_val_loss = 0.0
     tab_results = []
 
