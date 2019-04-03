@@ -89,7 +89,9 @@ def train(net, lr, l2, batch_iters, nb_classes, early_stopping, SAVE_PATH, verbo
 
             if verbose:
                 print_results(iteration, batch_iters, avg_train_acc, running_train_loss, val_accuracy, lr, t_start)
-            if lr < torch.tensor(early_stopping).cuda() and avg_train_acc - val_accuracy > 0.05:
+
+            early_lr = torch.tensor(early_stopping).cuda() if net.use_cuda else torch.tensor(early_stopping)
+            if lr < early_lr and avg_train_acc - val_accuracy > 0.05:
                 print("Early Stopping at %d. Highest Val: %.3f " % (iteration, max([tab_results[i][2] for i in range(len(tab_results))])))
                 return max([tab_results[i][2] for i in range(len(tab_results))])
                 break
